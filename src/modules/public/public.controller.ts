@@ -173,14 +173,51 @@ export class PublicController {
 
   //HOME SEARCH
   // 1. Search keywords comma seperated in sections of legislation
-  @Get('/legislations/adv/search')
+  @Get('/legislations/adv/search-content')
   searchForKeywordInLegislationWithinContent(
     @Query('Keywords') keywords: string,
-    @Query('In') searchIn: string,
-    @Query('Within') searchWithin: string,
+    @Query('page') page,
+    @Query('limit') limit,
   ) {
     return this.sectionService.PublicsearchForKeywordInLegislationWithinContent(
+      {
+        keywords: keywords,
+        page: page ? +page : 1,
+        limit: limit ? +limit : 10,
+      },
+    );
+  }
+  @Get('/legislations/adv/search-title')
+  searchForKeywordInLegislationWithinTitle(
+    @Query('Keywords') keywords: string,
+  ) {
+    return this.legislationService.PublicsearchForKeywordInLegislationWithinTitle(
       keywords,
+    );
+  }
+
+  //search within delegated legislations
+  @Get('/delegated-legislations/adv/search-title')
+  searchForKeywordInDelegatedLegislationWithinTitle(
+    @Query('Keywords') keywords: string,
+  ) {
+    return this.delegatedLegislationService.PublicsearchForKeywordInDelegatedLegislationWithinTitle(
+      keywords,
+    );
+  }
+
+  @Get('/delegated-legislations/adv/search-content')
+  searchForKeywordInDelegatedLegislationWithinContent(
+    @Query('Keywords') keywords: string,
+    @Query('page') page,
+    @Query('limit') limit,
+  ) {
+    return this.sectionService.PublicsearchForKeywordInDelegatedLegislationWithinContent(
+      {
+        keywords: keywords,
+        page: page ? +page : 1,
+        limit: limit ? +limit : 10,
+      },
     );
   }
   // 2. Search keyword comma seperated in sections of DL

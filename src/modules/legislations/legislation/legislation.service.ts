@@ -12,6 +12,7 @@ import { DocumentCopyService } from 'src/modules/storage/document-copy/document-
 import { User } from 'src/modules/users/entities/user.entity';
 import { LegislationGroupService } from '../legislation-group/legislation-group.service';
 import { Amendment } from 'src/modules/amendment/entities/amendment.entity';
+import { SEARCHEXCLUDEDKEYWORDS } from 'src/constants/constants';
 
 @Injectable()
 export class LegislationService {
@@ -749,6 +750,56 @@ export class LegislationService {
         'repealDate',
         'tabledDate',
       ],
+    });
+
+    const total = result.count;
+    const data = result.rows;
+    const totalPages = Math.ceil(total / limit);
+    const lastPage = totalPages - 1;
+    const previousPage = page - 1 < 1 ? null : page - 1;
+    const nextPage = page + 1 > lastPage + 1 ? null : page + 1;
+
+    return {
+      data: data,
+      firstPage: 1,
+      currentPage: page,
+      previousPage: previousPage,
+      nextPage: nextPage,
+      lastPage: lastPage + 1,
+      pageSize: limit,
+      totalPages: totalPages,
+      count: total,
+    };
+  }
+
+  async PublicsearchForKeywordInLegislationWithinTitle(
+    keywords: string,
+    page: number = 1,
+    limit: number = 50,
+  ): Promise<PaginatedResult<Legislation>> {
+    const keywordsParsed = keywords.split(',');
+    const excludedWords = SEARCHEXCLUDEDKEYWORDS;
+    const filteredKeywords = keywordsParsed
+      .map((keyword) => keyword.trim())
+      .filter((keyword) => !excludedWords.includes(keyword));
+    const searchTerms = filteredKeywords.map((keyword) => `%${keyword}%`);
+    const whereClause = {
+      [Op.or]: searchTerms.map((term) => ({
+        title_eng: {
+          [Op.like]: term,
+        },
+      })),
+    };
+
+    if (page <= 0) {
+      page = 1;
+    }
+    let offset = (page - 1) * limit;
+
+    const result = await this.legislationRepository.findAndCountAll({
+      where: whereClause,
+      limit: limit,
+      offset: offset,
     });
 
     const total = result.count;

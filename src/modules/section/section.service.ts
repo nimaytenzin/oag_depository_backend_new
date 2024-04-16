@@ -11,6 +11,7 @@ import { Amendment } from '../amendment/entities/amendment.entity';
 import { ChangeValue } from '../change-value/entities/change-value.entity';
 import { PaginatedResult } from 'src/utilities/pagination';
 import { SEARCHEXCLUDEDKEYWORDS } from 'src/constants/constants';
+import { DelegatedLegislation } from '../delegated-legislations/delegated-legislation/entities/delegated-legislation.entity';
 
 @Injectable()
 export class SectionService {
@@ -580,11 +581,11 @@ export class SectionService {
 
   //PUBLIC ADVANCED SEARCH
 
-  async PublicsearchForKeywordInLegislationWithinContent(
-    keywords: string,
-    page: number = 1,
-    limit: number = 50,
-  ): Promise<PaginatedResult<Section>> {
+  async PublicsearchForKeywordInLegislationWithinContent({
+    keywords,
+    page = 1,
+    limit = 50,
+  }): Promise<PaginatedResult<Section>> {
     const keywordsParsed = keywords.split(',');
     const excludedWords = SEARCHEXCLUDEDKEYWORDS;
     const filteredKeywords = keywordsParsed
@@ -595,6 +596,9 @@ export class SectionService {
       [Op.or]: searchTerms.map((term) => ({
         clause_eng: {
           [Op.like]: term,
+        },
+        legislationId: {
+          [Op.not]: null, // This ensures that legislationId is not null
         },
       })),
     };
@@ -607,6 +611,60 @@ export class SectionService {
     const result = await this.sectionRepository.findAndCountAll({
       where: whereClause,
       include: [Legislation],
+      limit: limit,
+      offset: offset,
+    });
+
+    const total = result.count;
+    const data = result.rows;
+    const totalPages = Math.ceil(total / limit);
+    const lastPage = totalPages - 1;
+    const previousPage = page - 1 < 1 ? null : page - 1;
+    const nextPage = page + 1 > lastPage + 1 ? null : page + 1;
+
+    return {
+      data: data,
+      firstPage: 1,
+      currentPage: page,
+      previousPage: previousPage,
+      nextPage: nextPage,
+      lastPage: lastPage + 1,
+      pageSize: limit,
+      totalPages: totalPages,
+      count: total,
+    };
+  }
+
+  async PublicsearchForKeywordInDelegatedLegislationWithinContent({
+    keywords,
+    page = 1,
+    limit = 50,
+  }): Promise<PaginatedResult<Section>> {
+    const keywordsParsed = keywords.split(',');
+    const excludedWords = SEARCHEXCLUDEDKEYWORDS;
+    const filteredKeywords = keywordsParsed
+      .map((keyword) => keyword.trim())
+      .filter((keyword) => !excludedWords.includes(keyword));
+    const searchTerms = filteredKeywords.map((keyword) => `%${keyword}%`);
+    const whereClause = {
+      [Op.or]: searchTerms.map((term) => ({
+        clause_eng: {
+          [Op.like]: term,
+        },
+        delegatedLegislationId: {
+          [Op.not]: null, // This ensures that legislationId is not null
+        },
+      })),
+    };
+
+    if (page <= 0) {
+      page = 1;
+    }
+    let offset = (page - 1) * limit;
+
+    const result = await this.sectionRepository.findAndCountAll({
+      where: whereClause,
+      include: [DelegatedLegislation],
       limit: limit,
       offset: offset,
     });
