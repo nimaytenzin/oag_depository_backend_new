@@ -190,6 +190,8 @@ export class PublicController {
   @Get('/legislations/adv/search-title')
   searchForKeywordInLegislationWithinTitle(
     @Query('Keywords') keywords: string,
+    @Query('page') page,
+    @Query('limit') limit,
   ) {
     return this.legislationService.PublicsearchForKeywordInLegislationWithinTitle(
       keywords,
