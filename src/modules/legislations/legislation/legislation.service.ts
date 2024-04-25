@@ -13,6 +13,7 @@ import { User } from 'src/modules/users/entities/user.entity';
 import { LegislationGroupService } from '../legislation-group/legislation-group.service';
 import { Amendment } from 'src/modules/amendment/entities/amendment.entity';
 import { SEARCHEXCLUDEDKEYWORDS } from 'src/constants/constants';
+import { LegislationRelationshipService } from '../legislation-relationship/legislation-relationship.service';
 
 @Injectable()
 export class LegislationService {
@@ -23,6 +24,7 @@ export class LegislationService {
     private readonly annexureService: AnnexureService,
     private readonly documentCopyService: DocumentCopyService,
     private readonly legislationGroupService: LegislationGroupService,
+    private readonly legislationRelationshipService: LegislationRelationshipService,
   ) {}
 
   async create(createLegislationDto) {
@@ -72,20 +74,71 @@ export class LegislationService {
       order: [['documentYear', 'DESC']],
     });
   }
-  async findLegislativeHistoryByLegislation(legislationId: number) {
-    const legislation = await this.findOne(legislationId);
-    return await this.legislationRepository.findAll({
-      where: {
-        legislationGroupId: legislation.legislationGroupId,
-      },
-      include: [
-        {
-          model: Amendment,
-        },
-      ],
-      order: [['documentYear', 'DESC']],
-    });
+
+  async findHeadLegislationNodeId(legislationId: number): Promise<number> {
+    let currentLegislationId = legislationId;
+    console.log('\n\nCURRENT LEGISLATION ID', currentLegislationId);
+    while (true) {
+      const repealingLegislations =
+        await this.legislationRelationshipService.findAllRepealingLegislation(
+          currentLegislationId,
+        );
+
+      console.log('CHECKING if it is repealed by any legislation');
+
+      // Check if the first repealing legislation exists and has an actingLegislationId
+      if (
+        repealingLegislations.length > 0 &&
+        repealingLegislations[0].actingLegislationId
+      ) {
+        console.log(
+          '\n\nCURRENT LEGISLATION ID',
+          currentLegislationId,
+          'REPEALED BY',
+          repealingLegislations[0].actingLegislationId,
+        );
+        currentLegislationId = repealingLegislations[0].actingLegislationId;
+        console.log('\n\nCURRENT LEGISLATION ID', currentLegislationId);
+      } else {
+        console.log('\n\n', 'Head = ', currentLegislationId);
+        return currentLegislationId;
+      }
+    }
   }
+
+  async findLegislativeHistory(legislationId: number) {
+    const headId = await this.findHeadLegislationNodeId(legislationId);
+
+    return await this.findLegislativeHistoryByLegislation(headId);
+  }
+
+  async findLegislativeHistoryByLegislation(
+    legislationId: number,
+  ): Promise<any> {
+    const history = [];
+    const repealedLegislations =
+      await this.legislationRelationshipService.findAllReapealedByLegisaltion(
+        legislationId,
+      );
+
+    // For each repealed legislation, recursively find its history
+    for (const repealedLegislation of repealedLegislations) {
+      const repealedLegislationHistory =
+        await this.findLegislativeHistoryByLegislation(
+          repealedLegislation.affectedLegislationId,
+        );
+      history.push({
+        parent: {
+          legislationId: repealedLegislation.actingLegislationId,
+          action: repealedLegislation.action,
+        },
+        child: repealedLegislationHistory,
+      });
+    }
+
+    return history;
+  }
+
   async findAllDraftActs() {
     return await this.legislationRepository.findAll({
       where: {
@@ -232,6 +285,7 @@ export class LegislationService {
       count: total,
     };
   }
+
   async findRepealedLegislationsPaginated({
     page = 1,
     limit = 10,
@@ -800,6 +854,66 @@ export class LegislationService {
       where: whereClause,
       limit: limit,
       offset: offset,
+    });
+
+    const total = result.count;
+    const data = result.rows;
+    const totalPages = Math.ceil(total / limit);
+    const lastPage = totalPages - 1;
+    const previousPage = page - 1 < 1 ? null : page - 1;
+    const nextPage = page + 1 > lastPage + 1 ? null : page + 1;
+
+    return {
+      data: data,
+      firstPage: 1,
+      currentPage: page,
+      previousPage: previousPage,
+      nextPage: nextPage,
+      lastPage: lastPage + 1,
+      pageSize: limit,
+      totalPages: totalPages,
+      count: total,
+    };
+  }
+
+  // ************** DRAFT LEGISLATIONS ROUTES ADMIN ************//
+
+  async findDraftLegislationsPaginated({
+    page = 1,
+    limit = 10,
+    startingCharacter,
+    effectiveYear,
+  }): Promise<PaginatedResult<Legislation>> {
+    // Corrected offset calculation
+    if (page <= 0) {
+      page = 1;
+    }
+    let offset = (page - 1) * limit;
+
+    const whereClause: any = {
+      type: LegislationType.ACT,
+      status: LegislationStatus.ENACTED,
+      isPublished: false,
+      isActive: true,
+    };
+
+    if (startingCharacter) {
+      whereClause.title_eng = {
+        [Op.startsWith]: startingCharacter,
+      };
+    }
+
+    if (effectiveYear) {
+      whereClause.documentYear = effectiveYear;
+    }
+
+    console.log('\n\n', whereClause, '\n');
+    const result = await this.legislationRepository.findAndCountAll({
+      where: whereClause,
+      include: [{ model: User }],
+      limit: limit,
+      offset: offset,
+      order: [['createdAt', 'DESC']],
     });
 
     const total = result.count;

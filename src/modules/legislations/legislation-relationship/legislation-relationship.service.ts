@@ -2,6 +2,8 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CreateLegislationRelationshipDto } from './dto/create-legislation-relationship.dto';
 import { UpdateLegislationRelationshipDto } from './dto/update-legislation-relationship.dto';
 import { LegislationRelationship } from './entities/legislation-relationship.entity';
+import { Legislation } from '../legislation/entities/legislation.entity';
+import { LegislationRelationshipActions } from 'src/constants/enums';
 
 @Injectable()
 export class LegislationRelationshipService {
@@ -10,12 +12,35 @@ export class LegislationRelationshipService {
     private readonly repository: typeof LegislationRelationship,
   ) {}
 
-  create(createLegislationRelationshipDto: CreateLegislationRelationshipDto) {
-    return 'This action adds a new legislationRelationship';
+  async create(
+    createLegislationRelationshipDto: CreateLegislationRelationshipDto,
+  ) {
+    return await this.repository.create(createLegislationRelationshipDto);
   }
 
-  findAll() {
-    return `This action returns all legislationRelationship`;
+  async findAll() {
+    return await this.repository.findAll({
+      include: [
+        { model: Legislation, as: 'actingLegislation' },
+        { model: Legislation, as: 'affectedLegislation' },
+      ],
+    });
+  }
+  async findAllReapealedByLegisaltion(legislationId: number) {
+    return await this.repository.findAll({
+      where: {
+        actingLegislationId: legislationId,
+        action: LegislationRelationshipActions.REPEALS,
+      },
+    });
+  }
+  async findAllRepealingLegislation(legislationId: number) {
+    return await this.repository.findAll({
+      where: {
+        affectedLegislationId: legislationId,
+        action: LegislationRelationshipActions.REPEALS,
+      },
+    });
   }
 
   findOne(id: number) {

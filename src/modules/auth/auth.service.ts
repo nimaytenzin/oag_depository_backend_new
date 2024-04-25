@@ -2,10 +2,16 @@ import { LoginDto } from './dto/login.dto';
 import { AuthResponseDto } from './dto/login-response.dto';
 import { CreateUserDto } from './../users/dto/create-user.dto';
 import { UserSignUpDto } from './dto/register.dto';
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { HttpErrorByCode } from '@nestjs/common/utils/http-error-by-code.util';
 
 export interface UserJwtPayload {
   email: string;
@@ -107,7 +113,13 @@ export class AuthService {
   }
 
   async validateUserwithToken(token) {
-    console.log('VERYING USER TOKEN \n\n', token);
-    return await this._jwtService.verify(token, { secret: '12312323' });
+    try {
+      return await this._jwtService.verify(token, { secret: '12312323' });
+    } catch (error) {
+      console.log('\n\nERROR', error, '\n\n');
+
+      throw new ForbiddenException(error);
+      return error;
+    }
   }
 }

@@ -6,6 +6,7 @@ import { SectionModule } from '../../section/section.module';
 import { AnnexureModule } from 'src/modules/storage/annexure/annexure.module';
 import { DocumentCopyModule } from 'src/modules/storage/document-copy/document-copy.module';
 import { LegislationGroupModule } from '../legislation-group/legislation-group.module';
+import { LegislationRelationshipModule } from '../legislation-relationship/legislation-relationship.module';
 
 @Module({
   controllers: [LegislationController],
@@ -18,7 +19,8 @@ import { LegislationGroupModule } from '../legislation-group/legislation-group.m
     AnnexureModule,
     DocumentCopyModule,
     LegislationGroupModule,
+    LegislationRelationshipModule,
   ],
-  exports:[LegislationService]
+  exports: [LegislationService],
 })
 export class LegislationModule {}

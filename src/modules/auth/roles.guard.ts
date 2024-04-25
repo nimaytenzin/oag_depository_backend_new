@@ -24,6 +24,7 @@ export class RolesGuard implements CanActivate {
       if (authorizationHeader) {
         const jwtToken = authorizationHeader.replace('Bearer ', '');
         const user = await this.authService.validateUserwithToken(jwtToken);
+
         console.log('\n');
         console.log('Role Guard Check');
         console.log(`https://baseurl${request.url}`);

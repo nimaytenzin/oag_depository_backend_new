@@ -3,8 +3,13 @@ import { PublishedLegislationStatisticsSummaryDto } from './dto/legislation-stat
 import { LegislationService } from '../../legislations/legislation/legislation.service';
 import { DelegatedLegislationService } from '../../delegated-legislations/delegated-legislation/delegated-legislation.service';
 import { Legislation } from '../../legislations/legislation/entities/legislation.entity';
-import { LegislationStatus, LegislationType } from 'src/constants/enums';
+import {
+  DelegatedLegislationStatus,
+  LegislationStatus,
+  LegislationType,
+} from 'src/constants/enums';
 import { DelegatedLegislation } from '../../delegated-legislations/delegated-legislation/entities/delegated-legislation.entity';
+import { PublishedDelegatedLegislationStatisticsSummaryDto } from './dto/delegated-legislation-stats.dto';
 
 @Injectable()
 export class StatisticsService {
@@ -52,5 +57,36 @@ export class StatisticsService {
     return data;
   }
 
-  getDelegatedLegislationStats() {}
+  async getDelegatedLegislationStats() {
+    const data: PublishedDelegatedLegislationStatisticsSummaryDto = {
+      current: 0,
+      revoked: 0,
+      modified: 0,
+    };
+
+    data.current = await this.delegatedLegislationRepository.count({
+      where: {
+        isActive: true,
+        isPublished: true,
+        status: DelegatedLegislationStatus.ENACTED,
+      },
+    });
+    data.revoked = await this.legislationRepository.count({
+      where: {
+        isActive: true,
+        isPublished: true,
+
+        status: DelegatedLegislationStatus.REVOKED,
+      },
+    });
+    data.modified = await this.legislationRepository.count({
+      where: {
+        isActive: true,
+        isPublished: true,
+        status: DelegatedLegislationStatus.MODIFIED,
+      },
+    });
+
+    return data;
+  }
 }

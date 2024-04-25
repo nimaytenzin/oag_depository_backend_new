@@ -94,5 +94,5 @@ export enum DelegatedLegislationRelationshipActions {
 
 export enum LegislationRelationshipActions {
   REPEALS = 'Repeals',
-  CONSOLIDATES = 'Consolidates',
+  AMENDS = 'Amends',
 }

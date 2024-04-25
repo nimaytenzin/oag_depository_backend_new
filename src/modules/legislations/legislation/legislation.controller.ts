@@ -13,6 +13,8 @@ import { LegislationService } from './legislation.service';
 import { CreateLegislationDto } from './dto/create-legislation.dto';
 import { UpdateLegislationDto } from './dto/update-legislation.dto';
 import { SearchLegislationDto } from './dto/search-keywork.dto';
+import { JwtAuthGuard } from 'src/modules/auth/jwt.auth.guard';
+import { Roles } from 'src/modules/auth/roles.decorator';
 
 interface SearchByAlphabetDto {
   alphabet: string;
@@ -21,10 +23,15 @@ interface SearchByAlphabetDto {
 export class LegislationController {
   constructor(private readonly legislationService: LegislationService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Post()
   create(@Body() createLegislationDto: CreateLegislationDto) {
     return this.legislationService.create(createLegislationDto);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Post('/legislation-group')
   createInExistingGroup(@Body() createLegislationDto: CreateLegislationDto) {
     return this.legislationService.createLegislationInExsitingLegislationGroup(
@@ -32,30 +39,23 @@ export class LegislationController {
     );
   }
 
-  @Get('/all')
-  async getAllLegislation() {
-    return await this.legislationService.getAllLegislation();
-  }
-
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Post('/search')
   async searchKeyword(@Body() searchLegislationDto: SearchLegislationDto) {
     return await this.legislationService.searchLegislation(
       searchLegislationDto.keyword,
     );
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Post('/search-in-legislation')
   async searchKeyWordInSpecificLegislation(@Body() searchLegislationDto: any) {
     return await this.legislationService.searchLegislation(
       searchLegislationDto.keyword,
     );
   }
-
-  // @UseGuards(JwtAuthGuard)
-  // @Roles(['admin'])
-  // @Get()
-  // findAll() {
-  //   return this.legislationService.findAll();
-  // }
 
   @Get()
   async getLegislationPaginated(
@@ -72,13 +72,15 @@ export class LegislationController {
     );
   }
 
-  // @UseGuards(JwtAuthGuard)
-  // @Roles(['admin'])
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.legislationService.findOne(+id);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/p/current')
   findAllActsPaginated2(
     @Query('page') page,
@@ -86,8 +88,6 @@ export class LegislationController {
     @Query('startsWith') startingCharacter?: string,
     @Query('publishedIn') effectiveYear?: number,
   ) {
-    console.log('\n\n', page, limit, '\n');
-
     return this.legislationService.findCurrentLegislationsPaginated({
       page: page ? +page : 1,
       limit: limit ? +limit : 10,
@@ -95,6 +95,9 @@ export class LegislationController {
       effectiveYear: +effectiveYear,
     });
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/p/repealed')
   findAllRepealedActsPaginated(
     @Query('page') page,
@@ -111,6 +114,9 @@ export class LegislationController {
       effectiveYear: +effectiveYear,
     });
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/p/bill')
   findAllBillsPaginated(
     @Query('page') page,
@@ -126,19 +132,29 @@ export class LegislationController {
     });
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/paginate/bills')
   findAllActievBills(@Query('page') pageno = 0) {
     return this.legislationService.findAllBillsPaginated(+pageno);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/draft/acts')
   findAllDraftActs() {
     return this.legislationService.findAllDraftActs();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/paginate/conventions')
   findAllConventionsPaginated(@Param('pageno') pageno: string) {
     return this.legislationService.findAllConventionsPaginated(+pageno);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/draft/type')
   findAllDraftConventions(@Query('type') type) {
     console.log('\n\nQruery parameter \n\n');
@@ -146,17 +162,22 @@ export class LegislationController {
     return this.legislationService.findAllDraftByType(type);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/history/sort')
   findAllByGroupSortedByYear(@Query('groupId') groupId) {
     return this.legislationService.findAllByGroupSortedByYear(groupId);
   }
-  @Get('/legislative-history/:legislationId')
+
+  // @UseGuards(JwtAuthGuard)
+  // @Roles(['admin'])
+  @Get('/history/:legislationId')
   findLegislativeHistory(@Param('legislationId') legislationId) {
-    return this.legislationService.findLegislativeHistoryByLegislation(
-      legislationId,
-    );
+    return this.legislationService.findLegislativeHistory(legislationId);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Post('/starting-with')
   findLatestNine(@Body() createLegislationDto: SearchByAlphabetDto) {
     return this.legislationService.searchByAlphabet(
@@ -164,21 +185,29 @@ export class LegislationController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/latest/legislation')
   getLatestLegislations(@Query('number') number: string) {
     return this.legislationService.findEnactedLegislatoin(+number);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/latest/bill')
   findBills() {
     return this.legislationService.findBills();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/latest/conventions')
   findConventions() {
     return this.legislationService.findConventions();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -187,8 +216,29 @@ export class LegislationController {
     return this.legislationService.update(+id, updateLegislationDto);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.legislationService.remove(+id);
+  }
+
+  // DRAFTS - isDraft? TRUE //
+
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
+  @Get('/p/draft/legislations')
+  getAllDraftLegislationsPaginated(
+    @Query('page') page,
+    @Query('limit') limit,
+    @Query('startsWith') startingCharacter?: string,
+    @Query('publishedIn') effectiveYear?: number,
+  ) {
+    return this.legislationService.findDraftLegislationsPaginated({
+      page: page ? +page : 1,
+      limit: limit ? +limit : 10,
+      startingCharacter: startingCharacter,
+      effectiveYear: +effectiveYear,
+    });
   }
 }
