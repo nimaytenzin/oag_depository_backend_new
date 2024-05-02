@@ -10,6 +10,7 @@ import {
 import {
   DelegatedLegislationRelationshipActions,
   LegislationRelationshipActions,
+  LegislationRelationshipModes,
 } from 'src/constants/enums';
 import { DelegatedLegislation } from 'src/modules/delegated-legislations/delegated-legislation/entities/delegated-legislation.entity';
 import { Legislation } from '../../legislation/entities/legislation.entity';
@@ -47,4 +48,11 @@ export class LegislationRelationship extends Model<LegislationRelationship> {
   affectedLegislationId: number;
   @BelongsTo(() => Legislation)
   affectedLegislation: Legislation;
+
+  @Column({
+    type: DataType.ENUM,
+    values: Object.values(LegislationRelationshipModes),
+    allowNull: false,
+  })
+  mode: LegislationRelationshipModes;
 }

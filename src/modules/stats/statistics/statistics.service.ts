@@ -27,8 +27,9 @@ export class StatisticsService {
       bills: 0,
       ammendments: 0,
       conventions: 0,
+      total: 0,
     };
-
+    data.total = await this.legislationRepository.count();
     data.current = await this.legislationRepository.count({
       where: {
         isActive: true,
@@ -62,8 +63,10 @@ export class StatisticsService {
       current: 0,
       revoked: 0,
       modified: 0,
+      total: 0,
     };
 
+    data.total = await this.delegatedLegislationRepository.count({});
     data.current = await this.delegatedLegislationRepository.count({
       where: {
         isActive: true,

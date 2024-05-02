@@ -7,9 +7,12 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { DelegatedLegislationService } from './delegated-legislation.service';
 import { CreateDelegatedLegislationDto } from './dto/create-delegated-legislation.dto';
+import { JwtAuthGuard } from 'src/modules/auth/jwt.auth.guard';
+import { Roles } from 'src/modules/auth/roles.decorator';
 
 @Controller('delegated-legislation')
 export class DelegatedLegislationController {
@@ -94,5 +97,24 @@ export class DelegatedLegislationController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.delegatedLegislationService.remove(+id);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
+  @Get('/p/draft')
+  getAllDrafDelegatedtLegislationsPaginated(
+    @Query('page') page,
+    @Query('limit') limit,
+    @Query('startsWith') startingCharacter?: string,
+    @Query('publishedIn') effectiveYear?: number,
+  ) {
+    return this.delegatedLegislationService.findDraftDelegatedLegislationsPaginated(
+      {
+        page: page ? +page : 1,
+        limit: limit ? +limit : 10,
+        startingCharacter: startingCharacter,
+        effectiveYear: +effectiveYear,
+      },
+    );
   }
 }

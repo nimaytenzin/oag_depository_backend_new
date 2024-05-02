@@ -1,4 +1,7 @@
-import { LegislationRelationshipActions } from 'src/constants/enums';
+import {
+  LegislationRelationshipActions,
+  LegislationRelationshipModes,
+} from 'src/constants/enums';
 
 export class CreateLegislationRelationshipDto {
   actingLegislationId: number;
@@ -6,4 +9,5 @@ export class CreateLegislationRelationshipDto {
   action: LegislationRelationshipActions;
 
   affectedLegislationId: number;
+  mode: LegislationRelationshipModes;
 }

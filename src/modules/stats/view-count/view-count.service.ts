@@ -1,11 +1,16 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { CreateViewCountDto } from './dto/create-view-count.dto';
 import { UpdateViewCountDto } from './dto/update-view-count.dto';
+import { ViewCount } from './entities/view-count.entity';
 
 @Injectable()
 export class ViewCountService {
-  create(createViewCountDto: CreateViewCountDto) {
-    return 'This action adds a new viewCount';
+  constructor(
+    @Inject('VIEWCOUNT_REPO')
+    private readonly repo: typeof ViewCount,
+  ) {}
+  async create(createViewCountDto: CreateViewCountDto) {
+    return await this.repo.create(createViewCountDto);
   }
 
   findAll() {

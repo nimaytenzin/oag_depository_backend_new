@@ -19,6 +19,7 @@ import { Roles } from 'src/modules/auth/roles.decorator';
 interface SearchByAlphabetDto {
   alphabet: string;
 }
+
 @Controller('legislation')
 export class LegislationController {
   constructor(private readonly legislationService: LegislationService) {}
@@ -79,6 +80,12 @@ export class LegislationController {
     return this.legislationService.findOne(+id);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
+  @Get('min/sm')
+  getAllminified(@Param('id') id: string) {
+    return this.legislationService.findAllMinified();
+  }
   @UseGuards(JwtAuthGuard)
   @Roles(['admin'])
   @Get('/p/current')
@@ -169,11 +176,11 @@ export class LegislationController {
     return this.legislationService.findAllByGroupSortedByYear(groupId);
   }
 
-  // @UseGuards(JwtAuthGuard)
-  // @Roles(['admin'])
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/history/:legislationId')
   findLegislativeHistory(@Param('legislationId') legislationId) {
-    return this.legislationService.findLegislativeHistory(legislationId);
+    return this.legislationService.findRepealHistory(legislationId);
   }
 
   @UseGuards(JwtAuthGuard)

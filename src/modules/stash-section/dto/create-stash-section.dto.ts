@@ -26,7 +26,7 @@ export class CreateAmendmentSectionDto {
   type: string;
   clause_eng: string;
   clause_dzo: string;
-  sectionId: number;
+  sectionId?: number;
   changeType: string;
   amendmentId: number;
   legislationId?: number;

@@ -454,6 +454,25 @@ export class SectionService {
 
   //******************** */ PUBLIC ROUTES *******************//
 
+  async publicfindSectionsByLegislationId(
+    legislationId: number,
+  ): Promise<Section[]> {
+    return await this.sectionRepository.findAll({
+      where: {
+        legislationId: legislationId,
+      },
+      attributes: ['id', 'type', 'clause_eng', 'clause_dzo'],
+      order: [['order', 'ASC']],
+      include: [
+        {
+          model: Change,
+          order: [['id', 'DESC']],
+          include: [{ model: Amendment }, { model: ChangeValue }],
+        },
+      ],
+    });
+  }
+
   async publicfindSectionsByDelegatedLegislationId(
     delegatedLegislationId: number,
   ): Promise<Section[]> {

@@ -75,17 +75,19 @@ export class LegislationService {
     });
   }
 
+  async findAllMinified() {
+    return await this.legislationRepository.findAll({
+      attributes: ['id', 'title_eng', 'title_dzo', 'status', 'isPublished'],
+    });
+  }
+
   async findHeadLegislationNodeId(legislationId: number): Promise<number> {
     let currentLegislationId = legislationId;
-    console.log('\n\nCURRENT LEGISLATION ID', currentLegislationId);
     while (true) {
       const repealingLegislations =
         await this.legislationRelationshipService.findAllRepealingLegislation(
           currentLegislationId,
         );
-
-      console.log('CHECKING if it is repealed by any legislation');
-
       // Check if the first repealing legislation exists and has an actingLegislationId
       if (
         repealingLegislations.length > 0 &&
@@ -106,37 +108,76 @@ export class LegislationService {
     }
   }
 
-  async findLegislativeHistory(legislationId: number) {
-    const headId = await this.findHeadLegislationNodeId(legislationId);
+  // async findLegislativeHistory(legislationId: number) {
+  //   const headId = await this.findHeadLegislationNodeId(legislationId);
 
-    return await this.findLegislativeHistoryByLegislation(headId);
+  //   const repealedLegisaltion =
+  //     this.legislationRelationshipService.findAllReapealedByLegisaltion(headId);
+
+  //     for(let)
+  // }
+
+  // async findLegislativeHistoryByLegislation(
+  //   legislationId: number,
+  // ): Promise<any> {
+  //   const history = [];
+  //   const repealedLegislations =
+  //     await this.legislationRelationshipService.findAllReapealedByLegisaltion(
+  //       legislationId,
+  //     );
+
+  //   console.log('REPEALED');
+  //   // For each repealed legislation, recursively find its history
+  //   for (const repealedLegislation of repealedLegislations) {
+  //     const repealedLegislationHistory =
+  //       await this.findLegislativeHistoryByLegislation(
+  //         repealedLegislation.affectedLegislationId,
+  //       );
+  //     history.push({
+  //       parent: {
+  //         legislationId: repealedLegislation.actingLegislationId,
+  //         action: repealedLegislation.action,
+  //         child: repealedLegislationHistory,
+  //       },
+  //     });
+  //   }
+
+  //   return history;
+  // }
+
+  async findRepealHistory(legislationId: number) {
+    const headNodeId = await this.findHeadLegislationNodeId(legislationId);
+    return await this.findRepealedLegislationTree(headNodeId);
   }
 
-  async findLegislativeHistoryByLegislation(
-    legislationId: number,
-  ): Promise<any> {
-    const history = [];
+  async findRepealedLegislationTree(legislationId: number): Promise<any> {
+    // Find all legislations repealed by the given legislation ID
+
     const repealedLegislations =
       await this.legislationRelationshipService.findAllReapealedByLegisaltion(
         legislationId,
       );
 
-    // For each repealed legislation, recursively find its history
+    // Initialize the tree with the given legislation ID as the root
+    const tree = {
+      legislationId: legislationId,
+      repealedLegislations: [],
+    };
+
+    // Recursively find repealed legislations for each repealed legislation
     for (const repealedLegislation of repealedLegislations) {
-      const repealedLegislationHistory =
-        await this.findLegislativeHistoryByLegislation(
-          repealedLegislation.affectedLegislationId,
-        );
-      history.push({
-        parent: {
-          legislationId: repealedLegislation.actingLegislationId,
-          action: repealedLegislation.action,
-        },
-        child: repealedLegislationHistory,
-      });
+      const repealedLegislationTree = await this.findRepealedLegislationTree(
+        repealedLegislation.affectedLegislationId,
+      );
+      repealedLegislationTree.legislationRelationshipId =
+        repealedLegislation.id;
+
+      repealedLegislationTree.mode = repealedLegislation.mode;
+      // Add the repealed legislation tree to the current legislation's list of repealed legislations
+      tree.repealedLegislations.push(repealedLegislationTree);
     }
 
-    return history;
+    return tree;
   }
 
   async findAllDraftActs() {

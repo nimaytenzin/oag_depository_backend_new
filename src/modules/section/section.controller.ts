@@ -19,12 +19,15 @@ import { CreateSectionDto, InsertSectionDto } from './dto/create-section.dto';
 export class SectionController {
   constructor(private readonly sectionService: SectionService) {}
 
-  // @UseGuards(JwtAuthGuard)
-  // @Roles(['admin'])
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Post()
   create(@Body() createSectionDto: CreateSectionDto) {
     return this.sectionService.create(createSectionDto);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Post('/insert')
   insert(@Body() data: InsertSectionDto) {
     return this.sectionService.insertInBetween(data);
@@ -58,11 +61,16 @@ export class SectionController {
     return this.sectionService.findOne(+id);
   }
 
-  @Get('by-legislation/:legislationId')
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
+  @Get('legislation/:legislationId')
   findAllSectionsByLegislation(@Param('legislationId') legislationId: string) {
     return this.sectionService.findSectionsByLegislationId(+legislationId);
   }
-  @Get('by-delegated-legislation/:delegatedLegislationId')
+
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
+  @Get('delegated-legislation/:delegatedLegislationId')
   findAllSectionsByDelegatedLegislation(
     @Param('delegatedLegislationId') delegatedLegislationId: string,
   ) {
@@ -84,11 +92,15 @@ export class SectionController {
     );
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateSectionDto: UpdateSectionDto) {
     return this.sectionService.update(+id, updateSectionDto);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.sectionService.remove(+id);

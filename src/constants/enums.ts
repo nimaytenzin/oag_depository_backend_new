@@ -96,3 +96,8 @@ export enum LegislationRelationshipActions {
   REPEALS = 'Repeals',
   AMENDS = 'Amends',
 }
+
+export enum LegislationRelationshipModes {
+  WHOLE = 'Whole',
+  PART = 'Part',
+}

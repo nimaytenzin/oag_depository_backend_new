@@ -42,7 +42,7 @@ export class Section extends Model<Section> {
   clause_eng: string;
   @Column({
     type: DataType.TEXT('long'),
-    allowNull: false,
+    allowNull: true,
   })
   clause_dzo: string;
 

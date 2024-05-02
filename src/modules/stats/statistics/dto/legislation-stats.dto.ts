@@ -4,4 +4,5 @@ export interface PublishedLegislationStatisticsSummaryDto {
   bills: number;
   ammendments: number;
   conventions: number;
+  total: number;
 }

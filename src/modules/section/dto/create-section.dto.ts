@@ -23,5 +23,5 @@ export class InsertSectionDto {
   clause_dzo: string;
   legislationId: number;
   delegatedLegislationId: number;
-  amendmentId: number;
+  amendmentId?: number;
 }

@@ -4,6 +4,8 @@ import { UpdateDocumentCopyDto } from './dto/update-document-copy.dto';
 import { DocumentCopy } from './entities/document-copy.entity';
 import { DocumentStatus, DocumentType } from 'src/constants/enums';
 import { instanceToPlain } from 'class-transformer';
+import * as fs from 'fs';
+import * as path from 'path';
 
 @Injectable()
 export class DocumentCopyService {
@@ -78,6 +80,18 @@ export class DocumentCopyService {
   }
 
   async remove(id: number) {
+    const documentCopy = await this.documentCopyRepository.findByPk(id);
+    if (!documentCopy) {
+      throw new Error(`Document copy with ${id} not found`);
+    }
+
+    const projectRoot = path.resolve(__dirname, '../../../../');
+    const filePath = path.join(projectRoot, '', documentCopy.fileUri);
+
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+
     const deletedRow = await this.documentCopyRepository.destroy({
       where: { id },
     });

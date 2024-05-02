@@ -20,6 +20,7 @@ import { DelegatedLegislationService } from '../delegated-legislations/delegated
 import UpdateSectionDto from '../section/dto/update-section.dto';
 import { UpdateLegislationDto } from '../legislations/legislation/dto/update-legislation.dto';
 import { CreateAmendmentSectionDto } from '../stash-section/dto/create-stash-section.dto';
+import { InsertSectionDto } from '../section/dto/create-section.dto';
 
 @Injectable()
 export class AmendmentService {
@@ -83,6 +84,7 @@ export class AmendmentService {
       where: {
         legislationId: legislationId,
       },
+      include: [{ model: Change, include: [{ model: ChangeValue }] }],
     });
   }
 
@@ -201,6 +203,8 @@ export class AmendmentService {
     return true;
   }
 
+  //AMENDMENT TRACKER
+
   async createChangeValue(
     fields: [string, string, string][],
     changeId: number,
@@ -216,106 +220,124 @@ export class AmendmentService {
     }
   }
 
-  async createChangeSection(createSectionDto: CreateAmendmentSectionDto) {
-    console.log('\n\n\n NEW CHANG SECTION', createSectionDto);
-    if (createSectionDto.changeType == SectionChangeType.CREATION.toString()) {
-      const createdSection = await this.sectionService.create({
-        order: 0,
-        type: createSectionDto.type,
-        clause_eng: createSectionDto.clause_eng,
-        clause_dzo: createSectionDto.clause_dzo,
-        delegatedLegislationId: createSectionDto.delegatedLegislationId,
-      });
-      console.log(createdSection);
-      const changedSectionAttributes = this.getChangedAttributesFromStash(
-        createdSection,
-        createdSection,
-        SectionChangeType.CREATION,
-      );
-      const changeDto: CreateChangeDto = {
-        sectionId: createdSection.id,
-        amendmentId: createSectionDto.amendmentId,
-        changeType: createSectionDto.changeType,
-      };
+  async createChangeSection(
+    createSectionDto: CreateAmendmentSectionDto,
+  ): Promise<any> {
+    console.log('\n\n\n NEW CHANGE SECTION', createSectionDto);
+    let section;
+    switch (createSectionDto.changeType) {
+      case SectionChangeType.CREATION.toString():
+        section = await this.createSection(createSectionDto);
+        break;
+      case SectionChangeType.INSERTION.toString():
+        section = await this.insertSection(createSectionDto);
+        break;
+      case SectionChangeType.MODIFICATION.toString():
+        section = await this.updateSection(createSectionDto);
+        break;
+      case SectionChangeType.DELETION.toString():
+        section = await this.deleteSection(createSectionDto);
+        break;
+      default:
+        throw new Error(
+          `Unsupported changeType: ${createSectionDto.changeType}`,
+        );
+    }
 
-      if (createSectionDto.legislationId) {
-        changeDto.legislationId = createSectionDto.legislationId;
-      } else {
-        changeDto.delegatedLegislationId =
-          createSectionDto.delegatedLegislationId;
-      }
-
+    if (section) {
+      const changeDto = this.prepareChangeDto(createSectionDto, section);
       const createdChangeObject = await this.changeService.create(changeDto);
       console.log(createdChangeObject);
-      await this.createChangeValue(
-        changedSectionAttributes,
-        createdChangeObject.id,
-      );
-    } else if (
-      createSectionDto.changeType ==
-        SectionChangeType.MODIFICATION.toString() ||
-      createSectionDto.changeType == SectionChangeType.DELETION.toString()
-    ) {
-      const section = await this.sectionService.findOne(
-        createSectionDto.sectionId,
-      );
-
-      if (
-        createSectionDto.changeType == SectionChangeType.DELETION.toString()
-      ) {
-        const changedFieldsAttributes = this.getChangedAttributesFromStash(
-          section,
-          createSectionDto,
-          SectionChangeType.DELETION,
-        );
-
-        const changeDto: CreateChangeDto = {
-          sectionId: createSectionDto.sectionId,
-          amendmentId: createSectionDto.amendmentId,
-          changeType: createSectionDto.changeType,
-        };
-        if (createSectionDto.legislationId) {
-          changeDto.legislationId = createSectionDto.legislationId;
-        } else {
-          changeDto.delegatedLegislationId =
-            createSectionDto.delegatedLegislationId;
-        }
-        const createdChangeObject = await this.changeService.create(changeDto);
-
-        await this.createChangeValue(
-          changedFieldsAttributes,
-          createdChangeObject.id,
-        );
-        await this.sectionService.softDelete(createSectionDto.sectionId);
-      } else {
-        const changedFieldsAttributes = this.getChangedAttributesFromStash(
-          section,
-          createSectionDto,
-        );
-        //create change entity
-        const changeDto: CreateChangeDto = {
-          sectionId: createSectionDto.sectionId,
-          amendmentId: createSectionDto.amendmentId,
-          changeType: createSectionDto.changeType,
-        };
-        if (createSectionDto.legislationId) {
-          changeDto.legislationId = createSectionDto.legislationId;
-        } else {
-          changeDto.delegatedLegislationId =
-            createSectionDto.delegatedLegislationId;
-        }
-        const createdChangeObject = await this.changeService.create(changeDto);
-
-        await this.createChangeValue(
-          changedFieldsAttributes,
-          createdChangeObject.id,
-        );
-        await this.sectionService.update(
-          createSectionDto.sectionId,
-          createSectionDto,
-        );
-      }
+      await this.createChangeValue(section, createdChangeObject.id);
     }
+
     return true;
+  }
+
+  private async createSection(
+    createSectionDto: CreateAmendmentSectionDto,
+  ): Promise<any> {
+    const createdSection = await this.sectionService.create({
+      order: 0,
+      type: createSectionDto.type,
+      clause_eng: createSectionDto.clause_eng,
+      clause_dzo: createSectionDto.clause_dzo,
+      delegatedLegislationId: createSectionDto.delegatedLegislationId,
+    });
+    return createdSection;
+  }
+
+  private async insertSection(
+    createSectionDto: CreateAmendmentSectionDto,
+  ): Promise<any> {
+    const insertData: InsertSectionDto = {
+      topOrder: createSectionDto.topOrder,
+      bottomOrder: createSectionDto.bottomOrder,
+      type: createSectionDto.type,
+      clause_eng: createSectionDto.clause_eng,
+      clause_dzo: createSectionDto.clause_dzo,
+      legislationId: createSectionDto.legislationId,
+      delegatedLegislationId: createSectionDto.delegatedLegislationId,
+      amendmentId: createSectionDto.amendmentId,
+    };
+    const insertedSection = await this.sectionService.insertInBetween(
+      insertData,
+    );
+    return insertedSection;
+  }
+
+  private async updateSection(
+    createSectionDto: CreateAmendmentSectionDto,
+  ): Promise<any> {
+    const update = await this.sectionService.update(
+      createSectionDto.sectionId,
+      {
+        clause_eng: createSectionDto.clause_eng,
+        clause_dzo: createSectionDto.clause_dzo,
+        order: createSectionDto.order,
+        type: createSectionDto.type,
+        amendentId: createSectionDto.amendmentId,
+      },
+    );
+    const updatedSection = await this.sectionService.findOne(
+      createSectionDto.sectionId,
+    );
+    return updatedSection;
+  }
+
+  private async deleteSection(
+    createSectionDto: CreateAmendmentSectionDto,
+  ): Promise<any> {
+    const update = await this.sectionService.update(
+      createSectionDto.sectionId,
+      {
+        softDelete: 1,
+      },
+    );
+    const deletedSection = await this.sectionService.findOne(
+      createSectionDto.sectionId,
+    );
+
+    return deletedSection;
+  }
+
+  private prepareChangeDto(
+    createSectionDto: CreateAmendmentSectionDto,
+    section: any,
+  ): CreateChangeDto {
+    const changeDto: CreateChangeDto = {
+      sectionId: section.id,
+      amendmentId: createSectionDto.amendmentId,
+      changeType: createSectionDto.changeType,
+    };
+
+    if (createSectionDto.legislationId) {
+      changeDto.legislationId = createSectionDto.legislationId;
+    } else {
+      changeDto.delegatedLegislationId =
+        createSectionDto.delegatedLegislationId;
+    }
+
+    return changeDto;
   }
 }

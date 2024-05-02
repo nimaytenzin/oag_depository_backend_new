@@ -8,44 +8,56 @@ import {
   Delete,
   UseInterceptors,
   UploadedFile,
+  UseGuards,
 } from '@nestjs/common';
 import { DocumentCopyService } from './document-copy.service';
 import { CreateDocumentCopyDto } from './dto/create-document-copy.dto';
 import { UpdateDocumentCopyDto } from './dto/update-document-copy.dto';
 import { DocumentCopyUploadInterceptor } from 'src/interceptors/document.copy.interceptor.interceptor';
+import { JwtAuthGuard } from 'src/modules/auth/jwt.auth.guard';
+import { Roles } from 'src/modules/auth/roles.decorator';
 
 @Controller('document-copy')
 export class DocumentCopyController {
   documentCopyFileLocation = '/storage/documentcopies/';
   constructor(private readonly documentCopyService: DocumentCopyService) {}
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Post()
   @UseInterceptors(DocumentCopyUploadInterceptor)
   create(
     @UploadedFile() file: Express.Multer.File,
     @Body() createDocumentCopyDto: CreateDocumentCopyDto,
   ) {
-    // const data: CreateDocumentCopyDto = {
-    //   fileUri: this.documentCopyFileLocation + file.filename,
-    //   refId: createDocumentCopyDto.refId,
-    //   language: createDocumentCopyDto.language,
-    //   type: createDocumentCopyDto.type,
-    //   status: createDocumentCopyDto.status,
-    // };
-    // console.log('file upload data \n\n\n', data, '\n\n');
-    // return this.documentCopyService.create(data);
+    console.log(file);
+    const data: CreateDocumentCopyDto = {
+      fileUri: this.documentCopyFileLocation + file.filename,
+      legislationId: createDocumentCopyDto.legislationId,
+      delegatedLegislationId: createDocumentCopyDto.delegatedLegislationId,
+      amendmentId: createDocumentCopyDto.amendmentId,
+      language: createDocumentCopyDto.language,
+    };
+    console.log('file upload data \n\n\n', data, '\n\n');
+    return this.documentCopyService.create(data);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get()
   findAll() {
     return this.documentCopyService.findAll();
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get(':id')
   findOne(@Param('id') id: string) {
     return this.documentCopyService.findOne(+id);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/draft-legislation/:draftLegisaltionId')
   findAllByDraftLegislation(
     @Param('draftLegisaltionId') draftLegisaltionId: string,
@@ -54,21 +66,30 @@ export class DocumentCopyController {
       +draftLegisaltionId,
     );
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/draft-delegated-legislation/:refId')
   findAllByDraftDelegatedLegislation(@Param('refId') refId: string) {
     return this.documentCopyService.findAllByDraftDelegatedLegislation(+refId);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/legislation/:refId')
   findAllByLegislation(@Param('refId') refId: string) {
     return this.documentCopyService.findAllByLegislation(+refId);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/delegated-legislation/:refId')
   findAllbyDelegatedLegislation(@Param('refId') refId: string) {
     return this.documentCopyService.findOne(+refId);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Patch(':id')
   @UseInterceptors(DocumentCopyUploadInterceptor)
   update(
@@ -102,8 +123,10 @@ export class DocumentCopyController {
     // return this.documentCopyService.update(+id, data);
   }
 
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  async remove(@Param('id') id: string) {
     return this.documentCopyService.remove(+id);
   }
 }

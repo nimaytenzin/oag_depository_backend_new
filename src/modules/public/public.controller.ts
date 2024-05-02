@@ -30,6 +30,11 @@ export class PublicController {
     );
   }
 
+  @Get('/legislation/sections/:legislationId')
+  findAllSectionsByLegislation(@Param('legislationId') id: string) {
+    return this.sectionService.publicfindSectionsByLegislationId(+id);
+  }
+
   @Get('/legislations/current')
   findAllActsPaginated2(
     @Query('page') page,
@@ -85,6 +90,11 @@ export class PublicController {
       startingCharacter: startingCharacter,
       effectiveYear: +effectiveYear,
     });
+  }
+
+  @Get('/legislation/history/:legislationId')
+  findLegislativeHistory(@Param('legislationId') legislationId) {
+    return this.legislationService.findRepealHistory(legislationId);
   }
 
   //****************** */ PUBLIC ROUTES FOR DELEGATED LEGISLAIONTS **************//

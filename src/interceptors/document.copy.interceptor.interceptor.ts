@@ -9,6 +9,7 @@ export class DocumentCopyUploadInterceptor extends FileInterceptor('file', {
     destination: './storage/documentcopies',
     filename: (req, file, callback) => {
       if (file) {
+        console.log('\n\n', file, 'n\n\n');
         const fileExtName = extname(file.originalname);
         const randomName = Array(4)
           .fill(null)

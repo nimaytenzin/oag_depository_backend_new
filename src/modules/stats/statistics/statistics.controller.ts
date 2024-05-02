@@ -17,7 +17,7 @@ export class StatisticsController {
   getLegislationStats() {
     return this.statisticsService.getPublishedLegislationStats();
   }
-  @Get('delegated-legislations')
+  @Get('p/delegated-legislations')
   getDelegatedLegislationStats() {
     return this.statisticsService.getDelegatedLegislationStats();
   }

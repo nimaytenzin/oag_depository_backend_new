@@ -30,4 +30,17 @@ export class ChangeService {
       ],
     });
   }
+
+  findAllByAmendment(id: number) {
+    return this.changeRepository.findAll({
+      where: {
+        amendmentId: id,
+      },
+      include: [
+        {
+          model: ChangeValue,
+        },
+      ],
+    });
+  }
 }

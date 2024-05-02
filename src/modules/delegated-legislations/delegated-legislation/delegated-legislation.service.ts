@@ -524,4 +524,62 @@ export class DelegatedLegislationService {
       count: total,
     };
   }
+
+  //Draft Paginated
+  async findDraftDelegatedLegislationsPaginated({
+    page = 1,
+    limit = 10,
+    startingCharacter,
+    effectiveYear,
+  }): Promise<PaginatedResult<DelegatedLegislation>> {
+    // Corrected offset calculation
+    if (page <= 0) {
+      page = 1;
+    }
+    let offset = (page - 1) * limit;
+
+    const whereClause: any = {
+      status: LegislationStatus.ENACTED,
+      isPublished: false,
+      isActive: true,
+    };
+
+    if (startingCharacter) {
+      whereClause.title_eng = {
+        [Op.startsWith]: startingCharacter,
+      };
+    }
+
+    if (effectiveYear) {
+      whereClause.documentYear = effectiveYear;
+    }
+
+    console.log('\n\n', whereClause, '\n');
+    const result = await this.delegatedLegislationRepository.findAndCountAll({
+      where: whereClause,
+      include: [{ model: User }],
+      limit: limit,
+      offset: offset,
+      order: [['createdAt', 'DESC']],
+    });
+
+    const total = result.count;
+    const data = result.rows;
+    const totalPages = Math.ceil(total / limit);
+    const lastPage = totalPages - 1;
+    const previousPage = page - 1 < 1 ? null : page - 1;
+    const nextPage = page + 1 > lastPage + 1 ? null : page + 1;
+
+    return {
+      data: data,
+      firstPage: 1,
+      currentPage: page,
+      previousPage: previousPage,
+      nextPage: nextPage,
+      lastPage: lastPage + 1,
+      pageSize: limit,
+      totalPages: totalPages,
+      count: total,
+    };
+  }
 }
