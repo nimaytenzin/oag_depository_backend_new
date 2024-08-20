@@ -36,6 +36,7 @@ export class LegislationRelationshipController {
   findAll() {
     return this.legislationRelationshipService.findAll();
   }
+
   @UseGuards(JwtAuthGuard)
   @Roles(['admin'])
   @Get(':id')

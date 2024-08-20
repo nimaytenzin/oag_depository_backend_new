@@ -6,10 +6,14 @@ import { ChangeValue } from './entities/change-value.entity';
 @Injectable()
 export class ChangeValueService {
   constructor(
-    @Inject("CHANGE_VALUE_REPOSITORY")
+    @Inject('CHANGE_VALUE_REPOSITORY')
     private readonly changeValueRepository: typeof ChangeValue,
-  ) { }
-  create(createChangeValueDto : CreateChangeValueDto) {
+  ) {}
+  create(createChangeValueDto: CreateChangeValueDto) {
+    console.log('\n*********************POST CHANGE VALUES *************\n');
+    console.log(createChangeValueDto);
+    console.log('\n*********************POST CHANGE VALUES *************\n');
+
     return this.changeValueRepository.create(createChangeValueDto);
   }
 }

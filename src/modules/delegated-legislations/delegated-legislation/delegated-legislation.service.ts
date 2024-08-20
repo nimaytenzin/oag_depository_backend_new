@@ -17,6 +17,7 @@ import { DelegatedLegislationGroupService } from '../delegated-legislation-group
 import { Amendment } from 'src/modules/amendment/entities/amendment.entity';
 import { Op } from 'sequelize';
 import { SEARCHEXCLUDEDKEYWORDS } from 'src/constants/constants';
+import { DelegatedLegislationRelationshipService } from '../delegated-legislation-relationship/delegated-legislation-relationship.service';
 
 @Injectable()
 export class DelegatedLegislationService {
@@ -25,6 +26,7 @@ export class DelegatedLegislationService {
     private readonly delegatedLegislationRepository: typeof DelegatedLegislation,
     private readonly sectionService: SectionService,
     private readonly delegatedlegislationGroupService: DelegatedLegislationGroupService,
+    private readonly relationshipService: DelegatedLegislationRelationshipService,
   ) {}
 
   async create(createLegislationDto) {
@@ -581,5 +583,78 @@ export class DelegatedLegislationService {
       totalPages: totalPages,
       count: total,
     };
+  }
+
+  //hisotry {}
+
+  async findHeadDelegatedLegislationNodeId(
+    delegatedLegislationId: number,
+  ): Promise<number> {
+    let currentDelegatedLegislationId = delegatedLegislationId;
+    while (true) {
+      const repealingLegislations =
+        await this.relationshipService.findAllRevokingDelegatedLegislation(
+          currentDelegatedLegislationId,
+        );
+      // Check if the first repealing legislation exists and has an actingLegislationId
+      if (
+        repealingLegislations.length > 0 &&
+        repealingLegislations[0].actingDelegatedLegislationId
+      ) {
+        console.log(
+          '\n\nCURRENT LEGISLATION ID',
+          currentDelegatedLegislationId,
+          'REPEALED BY',
+          repealingLegislations[0].actingDelegatedLegislationId,
+        );
+        currentDelegatedLegislationId =
+          repealingLegislations[0].actingDelegatedLegislationId;
+        console.log(
+          '\n\nCURRENT LEGISLATION ID',
+          currentDelegatedLegislationId,
+        );
+      } else {
+        console.log('\n\n', 'Head = ', currentDelegatedLegislationId);
+        return currentDelegatedLegislationId;
+      }
+    }
+  }
+  async findRevokeHistory(delegatedLegislationId: number) {
+    const headNodeId = await this.findHeadDelegatedLegislationNodeId(
+      delegatedLegislationId,
+    );
+    return await this.findRepealedLegislationTree(headNodeId);
+  }
+
+  async findRepealedLegislationTree(
+    delegatedLegislationId: number,
+  ): Promise<any> {
+    // Find all legislations repealed by the given legislation ID
+
+    const revokedDelegatedLegislations =
+      await this.relationshipService.findAllRevokedByDelegatedLegisaltion(
+        delegatedLegislationId,
+      );
+
+    // Initialize the tree with the given legislation ID as the root
+    const tree = {
+      delegatedLegislationId: delegatedLegislationId,
+      revokedDelegatedLegislations: [],
+    };
+
+    // Recursively find repealed legislations for each repealed legislation
+    for (const repealedLegislation of revokedDelegatedLegislations) {
+      const repealedLegislationTree = await this.findRepealedLegislationTree(
+        repealedLegislation.affectedDelegatedLegislationId,
+      );
+      repealedLegislationTree.legislationRelationshipId =
+        repealedLegislation.id;
+
+      // repealedLegislationTree.mode = repealedLegislation.mode;
+      // Add the repealed legislation tree to the current legislation's list of repealed legislations
+      tree.revokedDelegatedLegislations.push(repealedLegislationTree);
+    }
+
+    return tree;
   }
 }

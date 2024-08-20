@@ -12,5 +12,6 @@ import { DelegatedLegislationRelationship } from './entities/delegated-legislati
       useValue: DelegatedLegislationRelationship,
     },
   ],
+  exports: [DelegatedLegislationRelationshipService],
 })
 export class DelegatedLegislationRelationshipModule {}

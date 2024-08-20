@@ -255,7 +255,7 @@ export class SectionService {
   }
   async searchClauseInDelegatedLegislation(
     searchString: string,
-    delegatedLegislationId,
+    delegatedLegisaltionId,
   ) {
     const keywords = searchString.split(' ');
     // Define the excluded words
@@ -333,12 +333,12 @@ export class SectionService {
         clause_eng: {
           [Op.like]: term,
         },
-        delegatedLegislationId: delegatedLegislationId,
+        delegatedLegislationId: delegatedLegisaltionId,
       })),
     };
     return await this.sectionRepository.findAll({
       where: whereClause,
-      include: [Legislation],
+      include: [DelegatedLegislation],
     });
   }
 
@@ -352,7 +352,7 @@ export class SectionService {
         {
           model: Change,
           order: [['id', 'DESC']],
-          include: [{ model: Amendment }],
+          include: [{ model: Amendment }, { model: ChangeValue }],
         },
       ],
     });

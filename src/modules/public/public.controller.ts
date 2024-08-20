@@ -180,6 +180,14 @@ export class PublicController {
       },
     );
   }
+  @Get('/delegated-legisaltion/history/:delegatedLegisaltionId')
+  findDelegatedLegislativeHistory(
+    @Param('delegatedLegisaltionId') delegatedLegisaltionId,
+  ) {
+    return this.delegatedLegislationService.findRevokeHistory(
+      delegatedLegisaltionId,
+    );
+  }
 
   //HOME SEARCH
   // 1. Search keywords comma seperated in sections of legislation

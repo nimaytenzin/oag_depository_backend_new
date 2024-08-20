@@ -176,12 +176,7 @@ export class LegislationController {
     return this.legislationService.findAllByGroupSortedByYear(groupId);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Roles(['admin'])
-  @Get('/history/:legislationId')
-  findLegislativeHistory(@Param('legislationId') legislationId) {
-    return this.legislationService.findRepealHistory(legislationId);
-  }
+  
 
   @UseGuards(JwtAuthGuard)
   @Roles(['admin'])

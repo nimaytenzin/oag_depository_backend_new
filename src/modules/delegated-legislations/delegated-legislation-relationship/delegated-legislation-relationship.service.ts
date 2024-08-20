@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import { CreateDelegatedLegislationRelationshipDto } from './dto/create-delegated-legislation-relationship.dto';
 import { UpdateDelegatedLegislationRelationshipDto } from './dto/update-delegated-legislation-relationship.dto';
 import { DelegatedLegislationRelationship } from './entities/delegated-legislation-relationship.entity';
+import { DelegatedLegislationRelationshipActions } from 'src/constants/enums';
 
 @Injectable()
 export class DelegatedLegislationRelationshipService {
@@ -32,5 +33,22 @@ export class DelegatedLegislationRelationshipService {
 
   remove(id: number) {
     return `This action removes a #${id} delegatedLegislationRelationship`;
+  }
+
+  async findAllRevokedByDelegatedLegisaltion(legislationId: number) {
+    return await this.repository.findAll({
+      where: {
+        actingDelegatedLegislationId: legislationId,
+        action: DelegatedLegislationRelationshipActions.REVOKES,
+      },
+    });
+  }
+  async findAllRevokingDelegatedLegislation(legislationId: number) {
+    return await this.repository.findAll({
+      where: {
+        affectedDelegatedLegislationId: legislationId,
+        action: DelegatedLegislationRelationshipActions.REVOKES,
+      },
+    });
   }
 }

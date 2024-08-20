@@ -45,6 +45,13 @@ export class SectionController {
       searchDto.legislationId,
     );
   }
+  @Post('/search-in-delegated-legislation')
+  searchClauseInDelegateLegislation(@Body() searchDto: any) {
+    return this.sectionService.searchClauseInDelegatedLegislation(
+      searchDto.keyword,
+      searchDto.delegatedLegislationId,
+    );
+  }
 
   @Get('/fields')
   getFields() {

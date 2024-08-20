@@ -81,33 +81,6 @@ export class LegislationService {
     });
   }
 
-  async findHeadLegislationNodeId(legislationId: number): Promise<number> {
-    let currentLegislationId = legislationId;
-    while (true) {
-      const repealingLegislations =
-        await this.legislationRelationshipService.findAllRepealingLegislation(
-          currentLegislationId,
-        );
-      // Check if the first repealing legislation exists and has an actingLegislationId
-      if (
-        repealingLegislations.length > 0 &&
-        repealingLegislations[0].actingLegislationId
-      ) {
-        console.log(
-          '\n\nCURRENT LEGISLATION ID',
-          currentLegislationId,
-          'REPEALED BY',
-          repealingLegislations[0].actingLegislationId,
-        );
-        currentLegislationId = repealingLegislations[0].actingLegislationId;
-        console.log('\n\nCURRENT LEGISLATION ID', currentLegislationId);
-      } else {
-        console.log('\n\n', 'Head = ', currentLegislationId);
-        return currentLegislationId;
-      }
-    }
-  }
-
   // async findLegislativeHistory(legislationId: number) {
   //   const headId = await this.findHeadLegislationNodeId(legislationId);
 
@@ -145,6 +118,32 @@ export class LegislationService {
   //   return history;
   // }
 
+  async findHeadLegislationNodeId(legislationId: number): Promise<number> {
+    let currentLegislationId = legislationId;
+    while (true) {
+      const repealingLegislations =
+        await this.legislationRelationshipService.findAllRepealingLegislation(
+          currentLegislationId,
+        );
+      // Check if the first repealing legislation exists and has an actingLegislationId
+      if (
+        repealingLegislations.length > 0 &&
+        repealingLegislations[0].actingLegislationId
+      ) {
+        console.log(
+          '\n\nCURRENT LEGISLATION ID',
+          currentLegislationId,
+          'REPEALED BY',
+          repealingLegislations[0].actingLegislationId,
+        );
+        currentLegislationId = repealingLegislations[0].actingLegislationId;
+        console.log('\n\nCURRENT LEGISLATION ID', currentLegislationId);
+      } else {
+        console.log('\n\n', 'Head = ', currentLegislationId);
+        return currentLegislationId;
+      }
+    }
+  }
   async findRepealHistory(legislationId: number) {
     const headNodeId = await this.findHeadLegislationNodeId(legislationId);
     return await this.findRepealedLegislationTree(headNodeId);
@@ -183,9 +182,8 @@ export class LegislationService {
   async findAllDraftActs() {
     return await this.legislationRepository.findAll({
       where: {
-        isPublished: false,
+        isPublished: 0,
         type: LegislationType.ACT,
-        isActive: 1,
       },
       include: [{ model: User, attributes: ['fullName', 'email'] }],
     });
