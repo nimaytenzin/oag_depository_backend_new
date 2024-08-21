@@ -162,6 +162,13 @@ export class LegislationController {
 
   @UseGuards(JwtAuthGuard)
   @Roles(['admin'])
+  @Get('/paginate/conventions/draft')
+  findAllDraftConventionsPaginated(@Param('pageno') pageno: string) {
+    return this.legislationService.findAllDraftConventionsPaginated(+pageno);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Roles(['admin'])
   @Get('/draft/type')
   findAllDraftConventions(@Query('type') type) {
     console.log('\n\nQruery parameter \n\n');
@@ -175,8 +182,6 @@ export class LegislationController {
   findAllByGroupSortedByYear(@Query('groupId') groupId) {
     return this.legislationService.findAllByGroupSortedByYear(groupId);
   }
-
-  
 
   @UseGuards(JwtAuthGuard)
   @Roles(['admin'])

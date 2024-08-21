@@ -468,6 +468,37 @@ export class LegislationService {
     };
   }
 
+  async findAllDraftConventionsPaginated(
+    pageno: number,
+  ): Promise<PaginatedResult<Legislation>> {
+    const [data, total] = await Promise.all([
+      this.legislationRepository.findAll({
+        where: { type: LegislationType.CONVENTION, isPublished: false },
+        include: [{ model: User }],
+      }),
+
+      this.legislationRepository.count({
+        where: { type: LegislationType.CONVENTION, isPublished: false },
+      }),
+    ]);
+    const limit = 9;
+    const totalPages = Math.ceil(total / limit);
+    const lastPage = Math.ceil(totalPages / limit) - 1;
+    const previousPage: number = pageno - 1 === -1 ? null : pageno - 1;
+    const nextPage = pageno + 1 > lastPage ? null : pageno + 1;
+    return {
+      data: data,
+      firstPage: 0,
+      currentPage: pageno,
+      previousPage: previousPage,
+      nextPage: nextPage,
+      lastPage: lastPage,
+      pageSize: limit,
+      totalPages: totalPages,
+      count: total,
+    };
+  }
+
   async findAllBillsPaginated(
     pageno: number,
   ): Promise<PaginatedResult<Legislation>> {
