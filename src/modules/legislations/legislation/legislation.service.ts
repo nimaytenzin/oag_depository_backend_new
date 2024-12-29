@@ -14,6 +14,7 @@ import { LegislationGroupService } from '../legislation-group/legislation-group.
 import { Amendment } from 'src/modules/amendment/entities/amendment.entity';
 import { SEARCHEXCLUDEDKEYWORDS } from 'src/constants/constants';
 import { LegislationRelationshipService } from '../legislation-relationship/legislation-relationship.service';
+import { DocumentCopy } from 'src/modules/storage/document-copy/entities/document-copy.entity';
 
 @Injectable()
 export class LegislationService {
@@ -25,7 +26,7 @@ export class LegislationService {
     private readonly documentCopyService: DocumentCopyService,
     private readonly legislationGroupService: LegislationGroupService,
     private readonly legislationRelationshipService: LegislationRelationshipService,
-  ) {}
+  ) { }
 
   async create(createLegislationDto) {
     const legislationGroup = await this.legislationGroupService.create({
@@ -679,6 +680,11 @@ export class LegislationService {
         'repealDate',
         'tabledDate',
       ],
+      include: [
+        {
+          model: DocumentCopy
+        }
+      ]
     });
 
     const total = result.count;
