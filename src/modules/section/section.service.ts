@@ -698,6 +698,7 @@ export class SectionService {
         [Op.in]: searchIndex.data.map((section) => section.data.id)
       }
     };
+    console.log(whereClause);
 
     if (page <= 0) {
       page = 1;
@@ -753,6 +754,7 @@ export class SectionService {
         [Op.in]: searchIndex.data.map((section) => section.data.id)
       }
     };
+    console.log(whereClause);
 
     if (page <= 0) {
       page = 1;
