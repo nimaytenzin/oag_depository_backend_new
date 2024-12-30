@@ -692,12 +692,12 @@ export class SectionService {
       indexName: 'legislation',
       keyword: searchTerms
     })
+    console.log(searchIndex);
     const whereClause = {
       id: {
         [Op.in]: searchIndex.data.map((section) => section.data.id)
       }
     };
-    console.log(whereClause)
 
     if (page <= 0) {
       page = 1;
@@ -741,16 +741,17 @@ export class SectionService {
     const filteredKeywords = keywordsParsed
       .map((keyword) => keyword.trim())
       .filter((keyword) => !excludedWords.includes(keyword));
-    const searchTerms = filteredKeywords.map((keyword) => `%${keyword}%`);
+    const searchTerms = filteredKeywords.join(' ');
+    const searchIndex = await this.searchService.searchCharacterByKeyword({
+      indexName: 'dlegislation',
+      keyword: searchTerms
+    })
+    console.log(searchIndex);
+
     const whereClause = {
-      [Op.or]: searchTerms.map((term) => ({
-        clause_eng: {
-          [Op.like]: term,
-        },
-        delegatedLegislationId: {
-          [Op.not]: null, // This ensures that legislationId is not null
-        },
-      })),
+      id:{
+        [Op.in]: searchIndex.data.map((section) => section.data.id)
+      }
     };
 
     if (page <= 0) {
