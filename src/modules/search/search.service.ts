@@ -78,6 +78,7 @@ export class SearchService {
                     query: input.keyword,
                 },
             },
+            size:100
         };
 
         try {
