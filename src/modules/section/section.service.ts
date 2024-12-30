@@ -650,16 +650,18 @@ export class SectionService {
     await this.searchService.purgeIndex({
       indexName: 'legislation'
     });
-    await this.searchService.bulkDataIngestion({
-      indexName: 'dlegislation',
-      characters: delegatedSections.map((section) => {
-        return {
+
+    delegatedSections.forEach(async (section) => {
+      await this.searchService.singleDataIngestion({
+        indexName: 'dlegislation',
+        characters: [{
           id: section.id,
           clause_eng: section.clause_eng,
           clause_dzo: section.clause_dzo,
-        };
-      }),
+        }],
+      });
     });
+
 
     legislationSection.forEach(async (section) => {
       await this.searchService.singleDataIngestion({
@@ -750,7 +752,7 @@ export class SectionService {
     console.log(searchIndex);
 
     const whereClause = {
-      id:{
+      id: {
         [Op.in]: searchIndex.data.map((section) => section.data.id)
       }
     };
