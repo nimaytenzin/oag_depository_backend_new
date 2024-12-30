@@ -33,6 +33,7 @@ import { DelegatedLegislationRelationshipModule } from './modules/delegated-legi
 import { LegislationRelationshipModule } from './modules/legislations/legislation-relationship/legislation-relationship.module';
 import { StatisticsModule } from './modules/stats/statistics/statistics.module';
 import { ViewCountModule } from './modules/stats/view-count/view-count.module';
+import { SearchModule } from './modules/search/search.module';
 
 @Module({
   imports: [
@@ -70,6 +71,7 @@ import { ViewCountModule } from './modules/stats/view-count/view-count.module';
     LegislationRelationshipModule,
     StatisticsModule,
     ViewCountModule,
+    SearchModule,
   ],
   controllers: [AppController],
   providers: [

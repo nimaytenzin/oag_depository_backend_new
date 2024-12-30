@@ -12,13 +12,17 @@ import { ChangeValue } from '../change-value/entities/change-value.entity';
 import { PaginatedResult } from 'src/utilities/pagination';
 import { SEARCHEXCLUDEDKEYWORDS } from 'src/constants/constants';
 import { DelegatedLegislation } from '../delegated-legislations/delegated-legislation/entities/delegated-legislation.entity';
+import { SearchService } from '../search/search.service';
+import { Characters } from '../search/search.dto';
 
 @Injectable()
 export class SectionService {
   constructor(
     @Inject('SECTION_REPOSITORY')
     private readonly sectionRepository: typeof Section,
-  ) {}
+
+    private searchService: SearchService,
+  ) { }
 
   async fields() {
     const sections = await this.sectionRepository.getAttributes();
@@ -598,6 +602,79 @@ export class SectionService {
     });
   }
 
+  async searchIndexDelegatedLegislation(content: string) {
+    return await this.searchService.searchCharacterByKeyword({
+      indexName: 'dlegislation',
+      keyword: content
+    })
+  }
+
+  async searchIndexLegislation(content: string) {
+    return await this.searchService.searchCharacterByKeyword({
+      indexName: 'legislation',
+      keyword: content
+    })
+  }
+
+
+  async buildSearchIndex() {
+    const delegatedSections = await this.sectionRepository.findAll({
+      attributes: [
+        'id',
+        'clause_eng',
+        'clause_dzo',
+      ],
+      where: {
+        delegatedLegislationId: {
+          [Op.not]: null
+        }
+      }
+    });
+
+    const legislationSection = await this.sectionRepository.findAll({
+      attributes: [
+        'id',
+        'clause_eng',
+        'clause_dzo',
+      ],
+      where: {
+        legislationId: {
+          [Op.not]: null
+        }
+      }
+    })
+
+    await this.searchService.purgeIndex({
+      indexName: 'dlegislation'
+    });
+    await this.searchService.purgeIndex({
+      indexName: 'legislation'
+    });
+    await this.searchService.bulkDataIngestion({
+      indexName: 'dlegislation',
+      characters: delegatedSections.map((section) => {
+        return {
+          id: section.id,
+          clause_eng: section.clause_eng,
+          clause_dzo: section.clause_dzo,
+        };
+      }),
+    });
+
+    legislationSection.forEach(async (section) => {
+      await this.searchService.singleDataIngestion({
+        indexName: 'legislation',
+        characters: [{
+          id: section.id,
+          clause_eng: section.clause_eng,
+          clause_dzo: section.clause_dzo,
+        }],
+      });
+    });
+
+    return "Index built successfully";
+  }
+
   //PUBLIC ADVANCED SEARCH
 
   async PublicsearchForKeywordInLegislationWithinContent({
@@ -610,17 +687,17 @@ export class SectionService {
     const filteredKeywords = keywordsParsed
       .map((keyword) => keyword.trim())
       .filter((keyword) => !excludedWords.includes(keyword));
-    const searchTerms = filteredKeywords.map((keyword) => `%${keyword}%`);
+    const searchTerms = filteredKeywords.join(' ');
+    const searchIndex = await this.searchService.searchCharacterByKeyword({
+      indexName: 'legislation',
+      keyword: searchTerms
+    })
     const whereClause = {
-      [Op.or]: searchTerms.map((term) => ({
-        clause_eng: {
-          [Op.like]: term,
-        },
-        legislationId: {
-          [Op.not]: null, // This ensures that legislationId is not null
-        },
-      })),
+      id: {
+        [Op.in]: searchIndex.data.map((section) => section.data.id)
+      }
     };
+    console.log(whereClause)
 
     if (page <= 0) {
       page = 1;

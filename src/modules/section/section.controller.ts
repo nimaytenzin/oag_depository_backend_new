@@ -7,6 +7,7 @@ import {
   Param,
   Delete,
   UseGuards,
+  UnauthorizedException,
 } from '@nestjs/common';
 import { SectionService } from './section.service';
 import UpdateSectionDto from './dto/update-section.dto';
@@ -51,6 +52,15 @@ export class SectionController {
       searchDto.keyword,
       searchDto.delegatedLegislationId,
     );
+  }
+
+  @Get('/build-index/:authKey')
+  buildIndex(@Param('authKey') authKey: string) {
+    console.log(authKey);
+    if (authKey !== '1234') {
+      throw new UnauthorizedException();
+    }
+    return this.sectionService.buildSearchIndex();
   }
 
   @Get('/fields')
