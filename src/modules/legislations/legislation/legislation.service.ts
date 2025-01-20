@@ -636,13 +636,72 @@ export class LegislationService {
   }
 
   // ************* PUBLIC ROUTES *********************//
+  async publicFindAmendedLegislationsPaginated({ page = 1, limit = 10, startingCharacter, effectiveYear, }): Promise<PaginatedResult<Legislation>> {
+    if (page <= 0) {
+      page = 1;
+    }
+    let offset = (page - 1) * limit;
 
-  async publicFindCurrentLegislationsPaginated({
-    page = 1,
-    limit = 10,
-    startingCharacter,
-    effectiveYear,
-  }): Promise<PaginatedResult<Legislation>> {
+    const whereClause: any = {
+      type: LegislationType.ACT,
+      status: LegislationStatus.AMENDED,
+      isPublished: true,
+      isActive: true,
+    };
+
+    if (startingCharacter) {
+      whereClause.title_eng = {
+        [Op.startsWith]: startingCharacter,
+      };
+    }
+
+    if (effectiveYear) {
+      whereClause.documentYear = effectiveYear;
+    }
+
+    const result = await this.legislationRepository.findAndCountAll({
+      where: whereClause,
+      limit: limit,
+      offset: offset,
+      attributes: [
+        'id',
+        'type',
+        'title_eng',
+        'title_dzo',
+        'documentYear',
+        'status',
+        'commencementDate',
+        'repealDate',
+        'tabledDate',
+      ],
+      include: [
+        {
+          model: DocumentCopy
+        }
+      ]
+    });
+
+    const total = result.count;
+    const data = result.rows;
+    const totalPages = Math.ceil(total / limit);
+    const lastPage = totalPages - 1;
+    const previousPage = page - 1 < 1 ? null : page - 1;
+    const nextPage = page + 1 > lastPage + 1 ? null : page + 1;
+
+    return {
+      data: data,
+      firstPage: 1,
+      currentPage: page,
+      previousPage: previousPage,
+      nextPage: nextPage,
+      lastPage: lastPage + 1,
+      pageSize: limit,
+      totalPages: totalPages,
+      count: total,
+    };
+  }
+
+  async publicFindCurrentLegislationsPaginated({ page = 1, limit = 10, startingCharacter, effectiveYear, }): Promise<PaginatedResult<Legislation>> {
     if (page <= 0) {
       page = 1;
     }

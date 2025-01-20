@@ -49,6 +49,22 @@ export class PublicController {
       effectiveYear: +effectiveYear,
     });
   }
+
+  @Get('/legislations/amended')
+  findAllAmendedActsPaginated(
+    @Query('page') page,
+    @Query('limit') limit,
+    @Query('startsWith') startingCharacter?: string,
+    @Query('publishedIn') effectiveYear?: number,
+  ) {
+    return this.legislationService.publicFindAmendedLegislationsPaginated({
+      page: page ? +page : 1,
+      limit: limit ? +limit : 10,
+      startingCharacter: startingCharacter,
+      effectiveYear: +effectiveYear,
+    });
+  }
+
   @Get('/legislations/repealed')
   findAllRepealedActsPaginated(
     @Query('page') page,
