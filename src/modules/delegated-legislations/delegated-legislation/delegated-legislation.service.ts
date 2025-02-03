@@ -541,7 +541,6 @@ export class DelegatedLegislationService {
     let offset = (page - 1) * limit;
 
     const whereClause: any = {
-      status: LegislationStatus.ENACTED,
       isPublished: false,
       isActive: true,
     };

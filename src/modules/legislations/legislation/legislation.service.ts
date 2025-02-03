@@ -709,7 +709,10 @@ export class LegislationService {
 
     const whereClause: any = {
       type: LegislationType.ACT,
-      status: LegislationStatus.ENACTED,
+      [Op.or]: [
+        { status: LegislationStatus.ENACTED },
+        { status: LegislationStatus.AMENDED },
+      ],
       isPublished: true,
       isActive: true,
     };
@@ -1027,7 +1030,6 @@ export class LegislationService {
 
     const whereClause: any = {
       type: LegislationType.ACT,
-      status: LegislationStatus.ENACTED,
       isPublished: false,
       isActive: true,
     };
