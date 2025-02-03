@@ -13,6 +13,7 @@ import { DelegatedLegislationService } from './delegated-legislation.service';
 import { CreateDelegatedLegislationDto } from './dto/create-delegated-legislation.dto';
 import { JwtAuthGuard } from 'src/modules/auth/jwt.auth.guard';
 import { Roles } from 'src/modules/auth/roles.decorator';
+import { DelegatedLegislationStatus } from 'src/constants/enums';
 
 @Controller('delegated-legislation')
 export class DelegatedLegislationController {
@@ -97,6 +98,40 @@ export class DelegatedLegislationController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.delegatedLegislationService.remove(+id);
+  }
+
+  @Get('/published/revoked/p')
+  getAllRevokedDl(
+    @Query('page') page,
+    @Query('limit') limit,
+    @Query('startsWith') startingCharacter?: string,
+    @Query('publishedIn') effectiveYear?: number,
+  ) {
+    return this.delegatedLegislationService.findAllRevokedPublishedDL(
+      {
+        page: page ? +page : 1,
+        limit: limit ? +limit : 10,
+        startingCharacter: startingCharacter,
+        effectiveYear: +effectiveYear,
+      },
+    );
+  }
+
+  @Get('/published/current/p')
+  getAllCurrentDL(
+    @Query('page') page,
+    @Query('limit') limit,
+    @Query('startsWith') startingCharacter?: string,
+    @Query('publishedIn') effectiveYear?: number,
+  ) {
+    return this.delegatedLegislationService.findAllCurrentPublishedDL(
+      {
+        page: page ? +page : 1,
+        limit: limit ? +limit : 10,
+        startingCharacter: startingCharacter,
+        effectiveYear: +effectiveYear,
+      },
+    );
   }
 
   @UseGuards(JwtAuthGuard)
