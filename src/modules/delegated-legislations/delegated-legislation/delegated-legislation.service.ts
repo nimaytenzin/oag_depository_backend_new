@@ -602,7 +602,7 @@ export class DelegatedLegislationService {
         {status: DelegatedLegislationStatus.ENACTED},
         {status: DelegatedLegislationStatus.MODIFIED}
       ],
-      isPublished: false,
+      isPublished: true,
       isActive: true,
     };
 
