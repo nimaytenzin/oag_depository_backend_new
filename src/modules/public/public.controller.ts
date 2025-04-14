@@ -35,6 +35,11 @@ export class PublicController {
     return this.sectionService.publicfindSectionsByLegislationId(+id);
   }
 
+  @Get('/legislation/latest/current/:numbers')
+  getLatestCurrentLeigslations(@Param('numbers') numbers: string) {
+    return this.legislationService.findEnactedLegislatoin(+numbers);
+  }
+
   @Get('/legislations/current')
   findAllActsPaginated2(
     @Query('page') page,
