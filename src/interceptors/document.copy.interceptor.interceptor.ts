@@ -5,6 +5,9 @@ import { extname } from 'path';
 
 @Injectable()
 export class DocumentCopyUploadInterceptor extends FileInterceptor('file', {
+  limits: {
+    fileSize: Infinity,
+  },
   storage: diskStorage({
     destination: './storage/documentcopies',
     filename: (req, file, callback) => {
@@ -21,4 +24,4 @@ export class DocumentCopyUploadInterceptor extends FileInterceptor('file', {
       }
     },
   }),
-}) {}
+}) { }

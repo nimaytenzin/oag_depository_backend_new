@@ -13,6 +13,9 @@ export class AnnexureUploadInterceptor extends FileFieldsInterceptor(
     { name: 'file_dzo', maxCount: 1 },
   ],
   {
+    limits: {
+      fileSize: Infinity,
+    },
     storage: diskStorage({
       destination: './storage/annexures',
       filename: (req, file, callback) => {
@@ -29,4 +32,4 @@ export class AnnexureUploadInterceptor extends FileFieldsInterceptor(
       },
     }),
   },
-) {}
+) { }
