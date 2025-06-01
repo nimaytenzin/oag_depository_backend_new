@@ -54,6 +54,14 @@ export class StatisticsService {
         status: LegislationStatus.BILL,
       },
     });
+    data.conventions= await this.legislationRepository.count({
+      where: {
+        isActive: true,
+        isPublished: true,
+        type: LegislationType.CONVENTION,
+        status: LegislationStatus.ENACTED,
+      },
+    });
 
     return data;
   }
