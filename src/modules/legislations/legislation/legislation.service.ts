@@ -590,7 +590,7 @@ export class LegislationService {
         type: LegislationType.ACT,
         status: LegislationStatus.ENACTED,
       },
-      order: [['createdAt', 'DESC']],
+      order: [['documentYear', 'DESC']],
       limit: number,
     });
   }
