@@ -85,7 +85,7 @@ export class DocumentCopyController {
   @Roles(['admin'])
   @Get('/delegated-legislation/:refId')
   findAllbyDelegatedLegislation(@Param('refId') refId: string) {
-    return this.documentCopyService.findOne(+refId);
+    return this.documentCopyService.findAllByDelegatedLegislation(+refId);
   }
 
   @UseGuards(JwtAuthGuard)
