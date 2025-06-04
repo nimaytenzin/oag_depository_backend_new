@@ -74,15 +74,11 @@ export class DocumentCopyController {
     return this.documentCopyService.findAllByDraftDelegatedLegislation(+refId);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Roles(['admin'])
   @Get('/legislation/:refId')
   findAllByLegislation(@Param('refId') refId: string) {
     return this.documentCopyService.findAllByLegislation(+refId);
   }
 
-  @UseGuards(JwtAuthGuard)
-  @Roles(['admin'])
   @Get('/delegated-legislation/:refId')
   findAllbyDelegatedLegislation(@Param('refId') refId: string) {
     return this.documentCopyService.findAllByDelegatedLegislation(+refId);
