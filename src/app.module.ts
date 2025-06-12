@@ -34,6 +34,7 @@ import { LegislationRelationshipModule } from './modules/legislations/legislatio
 import { StatisticsModule } from './modules/stats/statistics/statistics.module';
 import { ViewCountModule } from './modules/stats/view-count/view-count.module';
 import { SearchModule } from './modules/search/search.module';
+import { FeedbackModule } from './modules/feedback/feedback.module';
 
 @Module({
   imports: [
@@ -72,6 +73,7 @@ import { SearchModule } from './modules/search/search.module';
     StatisticsModule,
     ViewCountModule,
     SearchModule,
+    FeedbackModule,
   ],
   controllers: [AppController],
   providers: [

@@ -26,6 +26,7 @@ import { ParentDocument } from 'src/modules/delegated-legislations/parent-docume
 import { DelegatedLegislationRelationship } from 'src/modules/delegated-legislations/delegated-legislation-relationship/entities/delegated-legislation-relationship.entity';
 import { LegislationRelationship } from 'src/modules/legislations/legislation-relationship/entities/legislation-relationship.entity';
 import { ViewCount } from 'src/modules/stats/view-count/entities/view-count.entity';
+import { Feedback } from 'src/modules/feedback/entities/feedback.entity';
 
 export const databaseProviders = [
   {
@@ -73,6 +74,7 @@ export const databaseProviders = [
         StashLegislation,
         StashDelegatedLegislation,
         StashSection,
+        Feedback,
 
         //new
       ]);
