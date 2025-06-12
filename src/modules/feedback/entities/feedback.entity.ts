@@ -26,4 +26,23 @@ export class Feedback extends Model<Feedback> {
         allowNull: true,
     })
     ip: string;
+
+    @Column({
+        type: DataType.STRING,
+        allowNull: true,
+    })
+    name: string;
+
+    @Column({
+        type: DataType.STRING,
+        allowNull: true,
+    })
+    email: string;
+
+    @Column({
+        type: DataType.STRING,
+        allowNull: true,
+    })
+    contact: string;p
+
 }
