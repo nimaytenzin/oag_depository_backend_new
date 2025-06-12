@@ -15,6 +15,8 @@ export class FeedbackService {
   }
 
   findAll() {
-    return this.feedbackRepository.findAll<Feedback>();
+    return this.feedbackRepository.findAll<Feedback>({
+      order: [['createdAt', 'DESC']],
+    });
   }
 }
