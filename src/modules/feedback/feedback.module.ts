@@ -8,7 +8,7 @@ import { Feedback } from './entities/feedback.entity';
   providers: [FeedbackService,
     {
       provide: 'FEEDBACK_REPOSITORY',
-      useClass: Feedback
+      useValue: Feedback
     }
   ]
 })

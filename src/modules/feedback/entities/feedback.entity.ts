@@ -43,6 +43,6 @@ export class Feedback extends Model<Feedback> {
         type: DataType.STRING,
         allowNull: true,
     })
-    contact: string;p
+    contact: string;
 
 }
